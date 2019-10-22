@@ -1,4 +1,7 @@
 # jumpman
+
+https://www.youtube.com/watch?v=-dplmYhbNLs&feature=youtu.be
+
 a small pygame game called jumpman. it is a 2d side scrolling platformer.
 
 if you would like to add levels to the game, you must add a list like the following: "['i','o','c','g','r','b']" into the  3d array called blockgridtmp inside settings.py.
