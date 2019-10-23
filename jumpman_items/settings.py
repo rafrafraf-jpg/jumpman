@@ -3,11 +3,11 @@ import pygame as pg
 import json, random, os, base64
 
 # display settings
-title = 'jumpman 1.0'
+title = 'jumpman 1.5'
 W, H = 896, 512
 HW, HH = W / 2, H /2
 AREA = W * H
-FPS = 16
+FPS = 20
 
 # define colors
 WHITE = (255, 255, 255)
@@ -15,6 +15,7 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+GREY = (169,169,169)
 
 pg.init()
 screen = pg.display.set_mode((W, H))
@@ -39,7 +40,7 @@ def load_screen(txt,x=1,check=False):
 
   screen.fill(BLACK)
     
-  loadTextType = pg.font.SysFont('helvetica', 15)
+  loadTextType = pg.font.SysFont('impact', 15)
   loadTextRect = loadTextType.render(txt, 1, WHITE)
   w = loadTextRect.get_width()
   #screen.blit(loadTextRect, (HW - (60 + w), HH))
@@ -52,10 +53,10 @@ def load_screen(txt,x=1,check=False):
   pg.display.update()
   pg.display.flip()
 
-load_screen('loading BG images')
+load_screen('loading and scaling BG image')
 
 # bakcground image load an scaling
-bgtmp = pg.image.load('sprites/backgroundV2.png')
+bgtmp = pg.image.load('sprites/backgroundV3.png')
 
 bg = pg.transform.scale(bgtmp, (W, H))
 
@@ -70,9 +71,13 @@ load_screen('loading R sprite images[0]')
 
 # main/jumpman sprite setup
 mainRtmp = [pg.image.load('sprites/jumpmanR1.png'),
-        pg.image.load('sprites/jumpmanR2.png'),
-        pg.image.load('sprites/jumpmanR3.png'),
-        pg.image.load('sprites/jumpmanR4.png')]
+            pg.image.load('sprites/jumpmanR1.png'),
+            pg.image.load('sprites/jumpmanR2.png'),
+            pg.image.load('sprites/jumpmanR2.png'),
+            pg.image.load('sprites/jumpmanR3.png'),
+            pg.image.load('sprites/jumpmanR3.png'),
+            pg.image.load('sprites/jumpmanR4.png'),
+            pg.image.load('sprites/jumpmanR4.png')]
 
 load_screen('loading R sprite images[4]')
 
@@ -83,9 +88,13 @@ for i in mainRtmp:
 load_screen('loading L sprite images[0]')
 
 mainLtmp = [pg.image.load('sprites/jumpmanL1.png'),
-        pg.image.load('sprites/jumpmanL2.png'),
-        pg.image.load('sprites/jumpmanL3.png'),
-        pg.image.load('sprites/jumpmanL4.png')]
+            pg.image.load('sprites/jumpmanL1.png'),        
+            pg.image.load('sprites/jumpmanL2.png'),
+            pg.image.load('sprites/jumpmanL2.png'),
+            pg.image.load('sprites/jumpmanL3.png'),
+            pg.image.load('sprites/jumpmanL3.png'),
+            pg.image.load('sprites/jumpmanL4.png'),
+            pg.image.load('sprites/jumpmanL4.png')]
 
 load_screen('loading L sprite images[4]')
 
@@ -101,8 +110,8 @@ load_screen('loading block textures [0]')
 
 # block settings
 textures = {
-  'grass' : pg.transform.scale(pg.image.load('sprites/block.png'),(64,64)),
-  'rGrass' : pg.transform.scale(pg.image.load('sprites/block2.png'),(64,64)),
+  'grass' : pg.transform.scale(pg.image.load('sprites/blockV2.png'),(64,64)),
+  'rGrass' : pg.transform.scale(pg.image.load('sprites/block2V2.png'),(64,64)),
   'bricks' : pg.transform.scale(pg.image.load('sprites/block3.png'),(64,64)),
   'spikes' : pg.transform.scale(pg.image.load('sprites/blockspike.png'),(64,64)),
   'barrier' : pg.transform.scale(pg.image.load('sprites/blockbarrier.png'),(64,64)),
@@ -136,13 +145,13 @@ blockgridtmp = [[
   ['o','o','o','c','c','c','P','c','c','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','c','c','s','c','c','c','c','c','o','o','o','o','o','o','o','p']
 ],[
   ['o','o','o','o','o','r','r','r','r','r','r','r','r','r','r','r','r','r','r','r','r','r','o','o','o','o','o','o','o','o','o','o','o','o','o','s','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o'],
-  ['o','o','o','o','i','o','o','o','o','o','o','r','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','r','o','s','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o'],
-  ['o','o','o','o','o','o','o','o','r','r','r','o','o','o','o','o','o','o','o','o','o','o','r','o','o','o','o','o','o','o','o','o','r','r','o','s','o','o','o','o','r','o','o','o','r','r','o','o','o','o','o','o','o','o'],
-  ['o','o','o','i','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','r','o','s','o','o','r','o','o','o','r','o','o','o','s','s','o','r','o','o','o','P'],
-  ['o','o','o','o','o','o','o','o','o','o','o','o','r','r','o','o','o','o','o','o','o','r','o','o','o','o','o','r','o','o','o','r','o','r','o','s','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','r','p'],
-  ['o','o','o','o','i','o','o','o','r','o','r','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','r','o','o','o','o','o','o','r','o','r','o','o','o','r','o','o','o','o','o','o','o','o','o','o','o','g','b','p'],
+  ['o','o','o','o','i','o','o','o','o','o','o','r','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','b','o','s','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o'],
+  ['o','o','o','o','o','o','o','o','r','r','r','o','o','o','o','o','o','o','o','o','o','o','r','o','o','o','o','o','o','o','o','o','r','b','o','s','o','o','o','o','r','o','o','o','r','r','o','o','o','o','o','o','o','o'],
+  ['o','o','o','i','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','b','o','s','o','o','b','o','o','o','r','o','o','o','s','s','o','r','o','o','o','P'],
+  ['o','o','o','o','o','o','o','o','o','o','o','o','r','r','o','o','o','o','o','o','o','r','o','o','o','o','o','r','o','o','o','r','o','b','o','s','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','r','p'],
+  ['o','o','o','o','i','o','o','o','r','o','r','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','r','o','o','o','o','o','o','b','o','r','o','o','o','b','o','o','o','o','o','o','o','o','o','o','o','g','b','p'],
   ['o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','r','o','r','o','o','r','o','o','o','o','o','o','o','o','o','r','o','o','s','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','r','b','c','p'],
-  ['o','o','o','r','r','r','P','r','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','o','o','r','r','r','r','s','r','o','o','o','o','o','o','o','o','o','o','o','o','o','o','p']
+  ['o','o','o','r','r','r','P','r','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','o','o','b','b','b','b','s','b','o','o','o','o','o','o','o','o','o','o','o','o','o','o','p']
 ],[
   ['o','o','o','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','c','o','o','o','o','o','o','o','o','o','o','o'],
   ['o','o','o','c','o','o','o','o','o','o','o','r','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o'],
@@ -159,12 +168,13 @@ blockgridtmp = [[
   ['o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','P'],
   ['o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','g','p'],
   ['o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','g','b','p'],
-  ['o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','i','i','i','i','i','i','i','g','b','b','p'],
-  ['g','g','g','g','g','g','P','g','g','g','g','b','b','b','b','b','b','b','b','b','b','c','c','c','c','c','c','c','c','c','c','r','r','r','r','r','r','r','r','r','r','i','i','o','o','o','o','o','o','o','o','o','o','p']
+  ['o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','g','b','b','p'],
+  ['g','g','g','g','g','g','P','g','g','g','g','b','b','b','b','b','b','b','b','b','b','c','c','c','c','c','c','c','c','c','c','r','r','r','r','r','r','r','r','r','r','i','i','i','i','i','i','i','i','i','o','o','o','p']
 ]]
 
 load_screen('loading txt.json')
 
+# stores words and randomly picks a word based on their probabilities for the start screen
 class Message(object):
   def __init__(self, file="txt.json"):
     self.file = file

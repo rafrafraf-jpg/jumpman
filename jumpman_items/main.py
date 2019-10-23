@@ -1,12 +1,13 @@
 # jumpman main game
 import pygame as pg
 from settings import *
+import time
 
 ###### FIX: PARTIALLY JUMPING THROUGH BLOCKS WHEN JUMPING INTO CORNER
-###### ADD: MORE LEVELS
+###### ADD: GLOBAL SCOREBOARD, BOSS CHARACTER
 
 pg.init()
-pg.mixer.music.load('music.mp3')
+pg.mixer.music.load('sounds/music.mp3')
 pg.mixer.music.play(-1)
 
 class Block(object):
@@ -29,7 +30,7 @@ class Game(object):
 
     pg.mixer.pre_init(44100, -16, 1, 512)
 
-    self.effect = pg.mixer.Sound('jump.wav')
+    self.effect = pg.mixer.Sound('sounds/jump.wav')
 
     self.running = True
 
@@ -139,6 +140,21 @@ class Game(object):
     else:
       pg.mixer.music.unpause()
       self.effect.set_volume(1.0)
+
+    # stores level times scoreboard
+    try:
+      if self.end != 0:
+        self.times.append(self.elapsed)
+    except Exception:
+      self.times = []
+
+    self.elapsed = 0
+    self.start = 0
+    self.end = 0
+
+    # once you loop back to level 1 after completing the final level, the scoreboard is wiped
+    if len(self.times) + 1 > len(blockgridtmp):
+      self.times = []
     
   def run(self):
     '''game loop'''
@@ -246,7 +262,7 @@ class Game(object):
       return False
   
   def draw(self):
-    '''game loop draw'''   
+    '''game loop draw'''
     # moves blocks and background to the right
     if self.walkRight and 'left' not in self.outputSideCol:
       self.bgX -= self.gameSpeed / 4
@@ -303,20 +319,20 @@ class Game(object):
     if not self.jump and not self.falling and self.walkRight:
       self.screen.blit(mainR[self.frame], (self.mainX, self.mainY))
       self.frame += 1
-      if self.frame == 4:
+      if self.frame == len(mainRtmp):
         self.frame = 0   
     # walk left animation  
     if not self.jump and not self.falling and self.walkLeft:
       self.screen.blit(mainL[self.frame], (self.mainX, self.mainY))
       self.frame += 1
-      if self.frame == 4:
+      if self.frame == len(mainRtmp):
         self.frame = 0
     # idle right frame
     if not self.jump and not self.falling and self.rFrame and not self.walkLeft and not self.walkRight:
-      self.screen.blit(mainR[1], (self.mainX, self.mainY))
+      self.screen.blit(mainR[2], (self.mainX, self.mainY))
     # idle left frame
     if not self.jump and not self.falling and not self.rFrame and not self.walkLeft and not self.walkRight:
-      self.screen.blit(mainL[1], (self.mainX, self.mainY))
+      self.screen.blit(mainL[2], (self.mainX, self.mainY))
     # falling right frame
     if not self.jump and self.falling and self.rFrame:
       self.screen.blit(mainJR, (self.mainX, self.mainY))
@@ -375,9 +391,30 @@ class Game(object):
     #pg.draw.rect(self.screen, BLUE, mainHitBox2)
 
     self.vol_button()
+
+    # get the start time of a level
+    if self.start == 0:
+      self.start = time.time()
+
+    # displays the scores for every level up to the level the player is on
+    textType = pg.font.SysFont('impact', 30)
+    textRect = textType.render('%s\'S TIMES :' % self.user, 1, BLACK)    
+    self.screen.blit(textRect, (0, 0))
+    for i in range(len(blockgridtmp) - 1):
+      try:
+        self.display_times(i + 1, self.times[i], 28 + (i * 28))
+      except Exception:
+        pass
     
     pg.display.flip()
 
+  def display_times(self, level, time, num):
+    '''display level times'''
+    textType = pg.font.SysFont('impact', 30)
+    textRect = textType.render('LEVEL %s : %.2f SECONDS' % (level, time), 1, BLACK)    
+    self.screen.blit(textRect, (0, 0 + num))
+    
+      
   def vol_button(self):
     '''volume mute and unmute'''
     mouse = pg.mouse.get_pos()
@@ -423,24 +460,24 @@ class Game(object):
     # default txt size is 20
     txtSize = 20
     
-    textType = pg.font.SysFont('helvetica', txtSize)
+    textType = pg.font.SysFont('impact', txtSize)
     textRect = textType.render(txt, 1, BLACK)
     txtW, txtH = textRect.get_size()
 
     # if the default txt size is bigger than the button, decrease txt size
     while txtW > w:
       txtSize -= 1
-      textType = pg.font.SysFont('helvetica', txtSize)
+      textType = pg.font.SysFont('impact', txtSize)
       textRect = textType.render(txt, 1, BLACK)
       txtW, txtH = textRect.get_size()
     # if the default txt size is smaller than the button, increase txt size
     while txtW < w:
       txtSize += 1
-      textType = pg.font.SysFont('helvetica', txtSize)
+      textType = pg.font.SysFont('impact', txtSize)
       textRect = textType.render(txt, 1, BLACK)
       txtW, txtH = textRect.get_size()
     # make the txtsize 1 size smaller otherwise it doesnt fit perfectly
-    textType = pg.font.SysFont('helvetica', txtSize - 1)
+    textType = pg.font.SysFont('impact', txtSize - 1)
     textRect = textType.render(txt, 1, BLACK)
     txtW, txtH = textRect.get_size()
     
@@ -456,9 +493,9 @@ class Game(object):
     self.screen.fill(BLACK)
 
     # random message
-    tmpfont = pg.font.SysFont('Calibri', self.msgtmp, True, False)
+    tmpfont = pg.font.SysFont('helvetica', self.msgtmp, True, False)
     tmptext = pg.transform.rotate(tmpfont.render(message, True, WHITE),32)
-    self.screen.blit(tmptext, (HW / 3, HH / 3))
+    self.screen.blit(tmptext, (HW / 5, HH / 3))
 
     # increases then decreases random message txt size
     if self.bool:
@@ -473,11 +510,16 @@ class Game(object):
     # blits mainR animation onto start screen when hovering over the buttons
     self.screen.blit(mainR[self.tmp], (HW - 25, HH - 25 - (mainJR.get_height())))
       
-    # draw 'NEW GAME' and 'EXIT GAME' button with their functionality
+    # draw 'LEVEL 1' and 'EXIT GAME' button with their functionality
     if self.draw_button(100,50,HW - 50,HH - 25,'LEVEL %s' % int(self.level + 1),GREEN,(0, 200, 0)):
-      self.runScreen = True
+      if len(self.letters) >= 3:
+        # self.user is the string variable for the username of the player
+        self.user = ''
+        for i in self.letters:
+          self.user += i
+        self.runScreen = True
     elif self.draw_button(100,50,HW - 50,HH - 25,'LEVEL %s' % int(self.level + 1),GREEN,(0, 200, 0),True) == 0:
-      if self.tmp == 3:
+      if self.tmp == len(mainRtmp) - 1:
         self.tmp = 0
       else:
         self.tmp += 1
@@ -486,10 +528,50 @@ class Game(object):
       self.running = False
       self.playing = False
 
+    self.user_input()
+
     pg.display.flip()
 
+
+  def user_input(self):
+    '''creates the username input on start screen'''
+    allow = 'abcdefghijklmnopqrstuvwxyz'
+    
+    try:
+      self.letters
+    except Exception:
+      self.letters = []
+    
+    string = ''
+    for i in self.letters:
+      string += i + ' '
+
+    while len(string) != 8:
+      string += ' _'
+    
+    textType = pg.font.SysFont('impact', 45)
+    textRect = textType.render('%s' % '_ _ _ _' if string == '' else string, 1, WHITE)
+    txtWidth = textRect.get_width()
+    self.screen.blit(textRect, (HW - (txtWidth / 2) + 5, 50))
+
+    for event in pg.event.get():
+      if event.type == pg.KEYDOWN:
+        let = pg.key.name(event.key)
+        
+        if let in allow:
+          if len(self.letters) < 4:
+            self.letters.append(let.upper())
+              
+        elif let == 'backspace' and len(self.letters) > 0:
+          del self.letters[-1]
+                      
   def show_next_level(self):
     '''next level screen'''
+    self.end = time.time()
+
+    # get the time taken to finish the level
+    self.elapsed = self.end - self.start
+    
     while True:
       self.clock.tick(FPS)
 
@@ -498,7 +580,7 @@ class Game(object):
       if self.level == len(blockgridtmp) - 1:
         self.level = -1
 
-      fnt = pg.font.SysFont('helvetica', 30)
+      fnt = pg.font.SysFont('impact', 30)
       txtrct = fnt.render('LEVEL %s' % int(self.level + 2), 1, WHITE)
       wtmp = txtrct.get_width()
       self.screen.blit(txtrct, (HW - (wtmp / 2), -HH + self.lvltmp))

@@ -1,0 +1,3 @@
+jumpman version 1.5:
+-username input
+-background update
